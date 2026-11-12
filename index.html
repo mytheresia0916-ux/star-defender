@@ -361,7 +361,14 @@ function spawnEnemy(s) {
     phase: rand(0, Math.PI * 2)
   };
   e.maxHp = e.hp;
-  if (s.type === 'boss') { e.x = W / 2; e.y = -80; bossAlive = true; }
+  if (s.type === 'boss') {
+    e.x = W / 2; e.y = -80; bossAlive = true;
+    e.lv = Math.max(1, Math.round(wave / 5));
+    e.hp = e.maxHp = Math.ceil(ENEMY.boss.hp * 1.3 * (1 + (e.lv - 1) * 1.1));
+    e.r = 52 + Math.min(3, e.lv - 1) * 6;
+    e.color = ['#d36bff', '#ff5d73', '#ffb547', '#4fffb0'][Math.min(3, e.lv - 1)];
+    e.score = 5000 * e.lv;
+  }
   enemies.push(e);
 }
 
@@ -660,15 +667,40 @@ function update(dt) {
       if (e.t > 14) e.y += 120 * dt;
     }
     else if (e.type === 'boss') {
+      const L = e.lv, rage = e.hp < e.maxHp * 0.5;
       if (e.y < 110) e.y += 60 * dt;
-      else e.x = W / 2 + Math.sin(e.t * 0.7) * (W / 2 - 70);
-      e.cool -= dt;
-      if (e.cool <= 0 && e.y >= 100) {
-        const phase = Math.floor(e.t / 4) % 3;
-        if (phase === 0) { for (let k = 0; k < 18; k++) fireEnemy(e, (k / 18) * Math.PI * 2 + e.t, 185); e.cool = 0.95; }
-        else if (phase === 1) { const a = Math.atan2(p.y - e.y, p.x - e.x); for (let k = -3; k <= 3; k++) fireEnemy(e, a + k * 0.13, 280); e.cool = 0.7; }
-        else { fireEnemy(e, Math.PI / 2 + Math.sin(e.t * 4) * 0.8, 260); e.cool = 0.09; }
-        if (e.hp < e.maxHp * 0.4) e.cool *= 0.7;
+      else {
+        e.x = W / 2 + Math.sin(e.t * (0.6 + L * 0.15)) * (W / 2 - 70);
+        if (L >= 3) e.y = 110 + Math.sin(e.t * 1.3) * 40;   // Lv.3부터 위아래로도 움직임
+      }
+      e.cool -= dt; e.summon = (e.summon ?? 6) - dt;
+      if (e.cool <= 0 && e.y >= 70) {
+        const nP = L >= 2 ? 4 : 3;
+        const phase = Math.floor(e.t / 4) % nP;
+        const bs = 1 + (L - 1) * 0.12;                         // 단계별 탄속 증가
+        if (phase === 0) {                                     // 원형 탄막
+          const n = 18 + (L - 1) * 6;
+          for (let k = 0; k < n; k++) fireEnemy(e, (k / n) * Math.PI * 2 + e.t, 185 * bs);
+          if (L >= 3) for (let k = 0; k < n; k++) fireEnemy(e, (k / n) * Math.PI * 2 - e.t + Math.PI / n, 140 * bs);
+          e.cool = 0.95 - (L - 1) * 0.08;
+        } else if (phase === 1) {                              // 조준 부채꼴
+          const a = Math.atan2(p.y - e.y, p.x - e.x), w = 3 + (L - 1);
+          for (let k = -w; k <= w; k++) fireEnemy(e, a + k * 0.12, 280 * bs);
+          e.cool = 0.7 - (L - 1) * 0.06;
+        } else if (phase === 2) {                              // 흔들리는 연사
+          fireEnemy(e, Math.PI / 2 + Math.sin(e.t * 4) * 0.8, 260 * bs);
+          if (L >= 2) fireEnemy(e, Math.PI / 2 - Math.sin(e.t * 4) * 0.8, 260 * bs);
+          e.cool = 0.09;
+        } else {                                               // Lv.2+: 회전 나선
+          for (let arm = 0; arm < 2 + L; arm++) fireEnemy(e, e.t * 3 + arm * Math.PI * 2 / (2 + L), 210 * bs);
+          e.cool = 0.12;
+        }
+        if (rage) e.cool *= L >= 2 ? 0.6 : 0.7;
+      }
+      // Lv.2부터 부하 소환
+      if (L >= 2 && e.summon <= 0 && e.y >= 70) {
+        for (let k = 0; k < L; k++) spawnEnemy({ type: L >= 3 && k === 0 ? 'shooter' : 'zig', x: clamp((e.x + (k - (L - 1) / 2) * 50) / W, .08, .92) });
+        e.summon = rage ? 4 : 7;
       }
     }
     e.x = clamp(e.x, e.r, W - e.r);
@@ -809,6 +841,7 @@ function drawEnemy(e) {
     ctx.beginPath(); ctx.ellipse(0, 0, 17, 9, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = e.hit > 0 ? '#fff' : '#bff0ff'; ctx.beginPath(); ctx.ellipse(0, -5, 8, 7, 0, Math.PI, 0); ctx.fill();
   } else if (e.type === 'boss') {
+    ctx.scale(e.r / 52, e.r / 52);
     ctx.beginPath();
     ctx.moveTo(0, 50); ctx.lineTo(30, 26); ctx.lineTo(56, 30); ctx.lineTo(48, -6); ctx.lineTo(26, -30); ctx.lineTo(0, -20);
     ctx.lineTo(-26, -30); ctx.lineTo(-48, -6); ctx.lineTo(-56, 30); ctx.lineTo(-30, 26); ctx.closePath(); ctx.fill();
@@ -949,9 +982,9 @@ function drawHUD(t) {
   if (boss) {
     const bw = W - 120, bx = 60, by = 92;
     ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(bx, by, bw, 8);
-    ctx.fillStyle = '#d36bff'; ctx.fillRect(bx, by, bw * Math.max(0, boss.hp) / boss.maxHp, 8);
+    ctx.fillStyle = boss.color; ctx.fillRect(bx, by, bw * Math.max(0, boss.hp) / boss.maxHp, 8);
     ctx.font = 'bold 12px Noto Sans KR, sans-serif'; ctx.fillStyle = '#e9c8ff'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('⚠ 모함 출현', W / 2, by - 3);
+    ctx.fillText(`⚠ 모함 Lv.${boss.lv}${boss.hp < boss.maxHp * 0.5 ? ' · 분노!' : ''}`, W / 2, by - 3);
   }
   // wave banner
   if (bannerTime > 0) {

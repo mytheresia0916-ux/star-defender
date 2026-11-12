@@ -427,12 +427,12 @@ function damage(e, amt) {
       sfx.bigBoom(); shake = 24; bossAlive = false; flash = .8;
       boomFX(e.x, e.y, e.color, 4);
       for (let k = 1; k <= 5; k++) setTimeout(() => { boomFX(e.x + rand(-50, 50), e.y + rand(-35, 35), k % 2 ? '#ff4fd8' : '#ffd23f', 1.6); sfx.boom(); shake = 12; }, k * 140);
-      dropPower(e.x - 20, e.y); dropPower(e.x + 20, e.y);
+      dropPower(e.x, e.y);
     } else {
       const sc = e.type === 'tank' ? 2 : e.type === 'shooter' ? 1.4 : 1;
       boomFX(e.x, e.y, e.color, sc); sfx.boom(); shake = Math.max(shake, e.type === 'tank' ? 9 : 4);
       kills++;
-      if (kills === 3 || kills % 6 === 0 || Math.random() < (e.type === 'tank' ? 0.5 : e.type === 'shooter' ? 0.2 : 0)) dropPower(e.x, e.y);
+      if (kills === 6 || (kills > 6 && kills % 18 === 0) || Math.random() < (e.type === 'tank' ? 0.2 : 0)) dropPower(e.x, e.y);
     }
   } else sfx.hit();
 }
@@ -446,7 +446,7 @@ function applyItem(type) {
   const p = player;
   sfx.power();
   if (type === 'P') { if (p.power < 5) { p.power++; floatText(p.x, p.y - 30, '무기 강화!', PCOLOR.P); } else { score += 500; floatText(p.x, p.y - 30, '+500', PCOLOR.P); } }
-  if (type === 'S') { p.shield = 12; floatText(p.x, p.y - 30, '보호막!', PCOLOR.S); }
+  if (type === 'S') { p.shield = 5; floatText(p.x, p.y - 30, '보호막!', PCOLOR.S); }
   if (type === 'H') { p.lives = Math.min(6, p.lives + 1); floatText(p.x, p.y - 30, '생명 +1', PCOLOR.H); }
   if (type === 'B') { bombs = Math.min(5, bombs + 1); floatText(p.x, p.y - 30, '폭탄 +1', PCOLOR.B); }
 }
@@ -541,7 +541,7 @@ function answerQuiz(i) {
     btns[i].classList.add('right');
     res.innerHTML = `<div class="ok">정답! +300점</div><div>${curQ.exp}</div><div style="margin-top:10px;color:#ffd23f;font-weight:700">아이템을 하나 고르세요 (1~4 키)</div>`;
     const rw = document.createElement('div'); rw.className = 'rewards';
-    [['P','⚡ 무기 강화',`현재 Lv.${player.power}`],['S','🛡 보호막','12초 무적'],['H','♥ 생명 +1',`현재 ${player.lives}개`],['B','💣 폭탄 +1',`현재 ${bombs}개`]].forEach(([t, name, sub]) => {
+    [['P','⚡ 무기 강화',`현재 Lv.${player.power}`],['S','🛡 보호막','5초 · 1회 방어'],['H','♥ 생명 +1',`현재 ${player.lives}개`],['B','💣 폭탄 +1',`현재 ${bombs}개`]].forEach(([t, name, sub]) => {
       const b = document.createElement('button'); b.className = 'rw'; b.style.background = PCOLOR[t];
       b.innerHTML = `${name}<small>${sub}</small>`; b.onclick = () => closeQuiz(t); rw.appendChild(b);
     });
@@ -695,7 +695,6 @@ function update(dt) {
   // powerups
   for (const u of powerups) {
     u.t += dt; u.y += 70 * dt; u.x += Math.sin(u.t * 3) * 30 * dt;
-    if (u.type === 'Q' && state === 'play' && dist2(u, p) < 110 ** 2) { const a = Math.atan2(p.y - u.y, p.x - u.x); u.x += Math.cos(a) * 220 * dt; u.y += Math.sin(a) * 220 * dt; }
     if (state === 'play' && !u.dead && dist2(u, p) < (u.r + p.r + 6) ** 2) {
       u.dead = true;
       if (u.type === 'Q') openQuiz(); else applyItem(u.type);

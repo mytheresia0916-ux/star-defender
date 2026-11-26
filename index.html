@@ -13,7 +13,7 @@
   canvas { display: block; width: 100%; height: 100%; background: #05060f; border-radius: 0; }
   @media (min-width: 560px) { canvas { border-radius: 14px; box-shadow: 0 0 60px rgba(90,120,255,.25); } #wrap { height: 94vh; } }
   .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; background: rgba(5,6,15,.72); backdrop-filter: blur(2px); border-radius: inherit; }
-  .hidden { display: none; }
+  .hidden { display: none !important; }
   h1 { font-family: 'Black Han Sans', sans-serif; font-size: 52px; letter-spacing: 2px; background: linear-gradient(180deg,#fff 0%,#8fd3ff 50%,#7a5cff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 18px rgba(120,160,255,.6)); line-height: 1.1; }
   .sub { margin-top: 8px; color: #9fb0ff; font-size: 15px; }
   .btn { margin-top: 28px; font-family: 'Black Han Sans', sans-serif; font-size: 22px; color: #05060f; background: linear-gradient(180deg,#9ff3ff,#4fb6ff); border: none; padding: 14px 42px; border-radius: 999px; cursor: pointer; box-shadow: 0 0 24px rgba(80,180,255,.6); transition: transform .1s; }
@@ -63,6 +63,16 @@
   .rank li span:nth-child(2) { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .btn.submit { display: inline-block; text-decoration: none; margin-top: 18px; background: linear-gradient(180deg,#ffe58a,#ffb547); box-shadow: 0 0 24px rgba(255,190,70,.55); }
   .codeline { margin-top: 12px; font-family: monospace; font-size: 15px; letter-spacing: 2px; color: #8fd3ff; }
+  #overScreen { justify-content: flex-start; overflow-y: auto; padding-top: 40px; padding-bottom: 30px; }
+  #overScreen > :first-child { margin-top: auto; } #overScreen > :last-child { margin-bottom: auto; }
+  #onlineRank { border-color: rgba(143,211,255,.45); background: rgba(80,140,255,.1); }
+  #onlineRank h3 { color: #8fd3ff; }
+  .or-big { font-size: 17px; margin: 4px 0; }
+  .or-rank { color: #ffd23f; font-family: 'Black Han Sans', sans-serif; font-weight: 400; font-size: 26px; }
+  .or-msg.ok { color: #4fffb0; font-weight: 700; }
+  .or-msg { font-size: 12.5px; color: #b9c3f0; margin-top: 4px; }
+  .or-top { margin-top: 10px; font-weight: 700; color: #ffd76a; font-size: 13px; text-align: left; }
+  .or-refresh { margin-top: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
   .submit-note { margin-top: 8px; font-size: 12.5px; color: #c4ccff; }
   #muteBtn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 14px; cursor: pointer; z-index: 5; }
 </style>
@@ -104,10 +114,11 @@
     <div class="score-line">점수 <b id="finalScore">0</b> · 웨이브 <b id="finalWave">1</b></div>
     <div class="score-line">퀴즈 <b id="quizStat">0 / 0</b></div>
     <div class="score-line best" id="bestLine"></div>
-    <div class="rank" id="rankBox"></div>
-    <div class="codeline" id="codeLine"></div>
     <a class="btn submit" id="submitBtn" href="#" target="_blank" rel="noopener">📝 점수 제출하기</a>
-    <div class="submit-note">버튼을 누르면 설문지가 열려요. 확인 후 [제출]을 눌러 주세요.</div>
+    <div class="submit-note" id="submitNote">버튼을 누르면 설문지가 열려요. 확인 후 [제출]을 눌러 주세요.</div>
+    <div class="codeline" id="codeLine"></div>
+    <div class="rank hidden" id="onlineRank"></div>
+    <div class="rank" id="rankBox"></div>
     <button class="btn" id="retryBtn" style="margin-top:14px">다시 하기</button>
   </div>
 
@@ -286,6 +297,70 @@ function renderRank(list, meId) {
     li.append(a, b, c); ol.appendChild(li);
   });
 }
+// ---------- 전체·반 순위 (구글 순위표에서 읽어 오기) ----------
+// 구글 웹 앱 주소 (GitHub 주소에서만 사용 — claude.ai 링크는 보안상 외부 연결이 막혀 있어요)
+const RANK_API = /github\.io$/.test(location.hostname)
+  ? 'https://script.google.com/macros/s/AKfycbyGZ76BtW5jm-S_mGj6dxc6AwAyN6sqWmOEdphUhqtSV4NCgTp0aZHwOmS0Mk7-mTuvwA/exec' : '';
+let lastRankArgs = null;
+function rankClassOf(name) {
+  const m = String(name).match(/\d{4,5}/);
+  if (!m) return '';
+  const d = m[0], g = Number(d[0]), c = d.length === 5 ? Number(d.slice(1, 3)) : Number(d[1]);
+  return g && c ? g + '학년 ' + c + '반' : '';
+}
+async function loadOnlineRank(myScore, myName, rec) {
+  if (!RANK_API) return;
+  lastRankArgs = [myScore, myName, rec];
+  const box = document.getElementById('onlineRank');
+  box.classList.remove('hidden');
+  box.innerHTML = '<h3>🌐 전체 순위</h3><div class="or-msg">' + (rec ? '기록을 저장하고 순위를 계산하는 중…' : '순위를 불러오는 중…') + '</div>';
+  try {
+    const ctrl = new AbortController(); const tm = setTimeout(() => ctrl.abort(), 20000);
+    let url = RANK_API + (RANK_API.includes('?') ? '&' : '?') + 't=' + Date.now();
+    if (rec) url += '&action=submit&name=' + encodeURIComponent(myName) + '&score=' + myScore + '&wave=' + rec.wave
+      + '&quiz=' + rec.quiz + '&code=' + rec.code + '&id=' + encodeURIComponent(rec.id);
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(tm);
+    const j = await res.json();
+    if (rec && !j.saved) throw new Error('not saved');
+    const players = j.players || [];
+    const myKey = starCode(myName, 0, 0, 0), myClass = rankClassOf(myName);
+    const others = players.filter(p => p.k !== myKey);
+    const mine = players.find(p => p.k === myKey);
+    const total = others.length + 1;
+    const overall = 1 + others.filter(p => p.s > myScore).length;
+    const classMates = myClass ? others.filter(p => p.c === myClass) : [];
+    const classRank = 1 + classMates.filter(p => p.s > myScore).length;
+    let html = '<h3>🌐 이번 기록의 순위</h3>';
+    html += `<div class="or-big">전체 <b>${total}명</b> 중 <b class="or-rank">${overall}위</b></div>`;
+    if (myClass) html += `<div class="or-big">${myClass} <b>${classMates.length + 1}명</b> 중 <b class="or-rank">${classRank}위</b></div>`;
+    if (mine && mine.s > myScore) {
+      const bestRank = 1 + others.filter(p => p.s > mine.s).length;
+      html += `<div class="or-msg">내 최고 기록 ${mine.s.toLocaleString()}점은 전체 ${bestRank}위예요</div>`;
+    }
+    if (rec) html += '<div class="or-msg ok">✅ 기록이 순위표에 자동 저장됐어요</div>';
+    html += '<div class="or-top">전체 TOP 5</div><ol></ol>';
+    box.innerHTML = html;
+    document.getElementById('rankBox').classList.add('hidden');
+    const ol = box.querySelector('ol'), medal = ['🥇','🥈','🥉'];
+    const top = players.slice(0, 5);
+    if (!top.length) ol.innerHTML = '<li><span></span><span>아직 기록이 없어요</span><span></span></li>';
+    top.forEach((p, i) => {
+      const li = document.createElement('li'); if (p.k === myKey) li.className = 'me';
+      const a = document.createElement('span'); a.textContent = medal[i] || (i + 1);
+      const b = document.createElement('span'); b.textContent = p.n;
+      const c = document.createElement('span'); c.textContent = p.s.toLocaleString() + '점';
+      li.append(a, b, c); ol.appendChild(li);
+    });
+    const rb = document.createElement('button'); rb.className = 'or-refresh'; rb.textContent = '🔄 순위 새로고침';
+    rb.onclick = () => loadOnlineRank(myScore, myName, null); box.appendChild(rb);
+  } catch (e) {
+    box.innerHTML = '<h3>🌐 전체 순위</h3><div class="or-msg">' + (rec ? '기록을 자동으로 저장하지 못했어요. 아래 [다시 시도]를 누르거나 [점수 제출하기]로 제출해 주세요.' : '순위를 불러오지 못했어요.') + '</div>';
+    const rb = document.createElement('button'); rb.className = 'or-refresh'; rb.textContent = '🔄 다시 시도';
+    rb.onclick = () => loadOnlineRank(...lastRankArgs); box.appendChild(rb);
+    if (rec) ['submitBtn', 'submitNote'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+  }
+}
 function gameOver() {
   state = 'over';
   const isNew = score > best;
@@ -298,6 +373,7 @@ function gameOver() {
   const rank = loadRank(); rank.push(me); rank.sort((x, y) => y.score - x.score); saveRank(rank.slice(0, 50));
   const pos = rank.indexOf(me) + 1;
   if (!isNew) document.getElementById('bestLine').textContent = `이 기기에서 ${pos}위 · 최고 기록 ${best.toLocaleString()}점`;
+  document.getElementById('rankBox').classList.remove('hidden');
   renderRank(rank, me.id);
   const code = starCode(playerName, score, wave, quizRight);
   const FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSclZgp_y6DUOzUKmwHavkMjIouTJoy9YrAeri5Sz8lCh1Nmmg/viewform?usp=pp_url';
@@ -306,6 +382,9 @@ function gameOver() {
     + '&entry.1751686046=' + score + '&entry.1772972942=' + wave + '&entry.935923774=' + quizRight
     + (CODE_ENTRY ? '&' + CODE_ENTRY + '=' + code : '');
   document.getElementById('codeLine').textContent = '확인 코드 ' + code;
+  const submitUI = ['submitBtn', 'submitNote'].map(id => document.getElementById(id));
+  submitUI.forEach(el => el && el.classList.toggle('hidden', !!RANK_API));
+  loadOnlineRank(score, playerName, { wave, quiz: quizRight, code, id: me.id + '-' + Math.random().toString(36).slice(2, 7) });
   show('overScreen');
   showBestStart();
 }

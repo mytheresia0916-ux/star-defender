@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>우주 슈팅 게임 – 스타 디펜더</title>
+<title>스타 디펜더 – 자본주의 발달 과정 편</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,7 +110,10 @@
   #startScreen h1 { font-size: 58px; margin-top: 2px; white-space: nowrap;
     background: linear-gradient(180deg, #ffffff 0%, #fff2a8 40%, #ffb547 70%, #ff6fa8 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 3px 0 rgba(80,20,140,.9)) drop-shadow(0 0 22px rgba(255,180,120,.7)); }
-  #startScreen .sub { color: #f2f0ff; text-shadow: 0 1px 6px rgba(20,0,60,.6); }
+  .st-edition { margin-top: 6px; font-family: 'Black Han Sans', sans-serif; font-size: 22px; color: #2a0a40;
+    background: linear-gradient(90deg, #7dfbd4, #9ff3ff 50%, #c9a7ff); padding: 6px 18px; border-radius: 999px;
+    box-shadow: 0 0 22px rgba(140,240,255,.7), 0 4px 0 rgba(60,30,140,.6); transform: rotate(-2deg); }
+  #startScreen .sub { word-break: keep-all; max-width: 330px; color: #f2f0ff; text-shadow: 0 1px 6px rgba(20,0,60,.6); }
   #startScreen #nameInput { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.6); }
   #startScreen #nameInput::placeholder { color: rgba(255,255,255,.75); }
   #startBtn { background: linear-gradient(180deg, #ffe58a, #ff9a5a 55%, #ff5fa2); color: #2a0a40; box-shadow: 0 0 28px rgba(255,150,120,.8), 0 6px 0 #a3306e; animation: pulse 1.8s ease-in-out infinite; }
@@ -154,7 +157,8 @@
     </svg>
     <div class="st-kicker">STAR DEFENDER</div>
     <h1>스타 디펜더</h1>
-    <div class="sub">은하를 지켜라! 몰려오는 외계 함대를 격파하세요</div>
+    <div class="st-edition">💰 자본주의 발달 과정 편</div>
+    <div class="sub">상업 자본주의부터 신자유주의까지! 시장경제 퀴즈를 풀며 은하를 지켜라</div>
     <input id="nameInput" maxlength="12" placeholder="이름 또는 학번 (예: 10215 홍길동)" autocomplete="off">
     <button class="btn" id="startBtn">🚀 게임 시작</button>
     <div class="help">

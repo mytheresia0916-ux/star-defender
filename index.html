@@ -74,6 +74,56 @@
   .or-top { margin-top: 10px; font-weight: 700; color: #ffd76a; font-size: 13px; text-align: left; }
   .or-refresh { margin-top: 8px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
   .submit-note { margin-top: 8px; font-size: 12.5px; color: #c4ccff; }
+  /* ---------- 시작 화면 ---------- */
+  #startScreen { background:
+      radial-gradient(120% 70% at 85% 8%, rgba(255,120,200,.55), transparent 55%),
+      radial-gradient(90% 60% at 10% 30%, rgba(90,140,255,.6), transparent 60%),
+      radial-gradient(80% 50% at 70% 75%, rgba(60,230,255,.35), transparent 60%),
+      linear-gradient(170deg, #3a1a7a 0%, #2a2f9e 40%, #1a4fa8 70%, #2b1b6e 100%);
+    backdrop-filter: none; overflow-y: auto; overflow-x: hidden; justify-content: safe center; z-index: 3; }
+  #startScreen > *:not(.st-bg) { position: relative; z-index: 1; }
+  .st-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+  .st-bg i { position: absolute; display: block; }
+  .planet { width: 260px; height: 260px; left: -90px; bottom: -110px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffd6a5 0%, #ff8fab 35%, #8a4fff 70%, #3a1a7a 100%);
+    box-shadow: 0 0 60px rgba(255,140,200,.6), inset -30px -20px 60px rgba(30,0,80,.55); }
+  .ring { width: 380px; height: 80px; left: -150px; bottom: 0; border-radius: 50%; border: 6px solid rgba(255,220,180,.55);
+    transform: rotate(-18deg); box-shadow: 0 0 20px rgba(255,200,160,.4); }
+  .moon { width: 64px; height: 64px; right: 26px; top: 70px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff, #bfe8ff 50%, #6aa8ff 100%); box-shadow: 0 0 40px rgba(170,220,255,.8); animation: bob 6s ease-in-out infinite; }
+  .stars { inset: 0; background-repeat: repeat; }
+  .stars.s1 { background-image: radial-gradient(1.6px 1.6px at 20px 30px, #fff, transparent), radial-gradient(1.2px 1.2px at 120px 80px, #fff, transparent), radial-gradient(2px 2px at 200px 150px, #ffe9a8, transparent), radial-gradient(1.4px 1.4px at 60px 190px, #bfe8ff, transparent);
+    background-size: 240px 220px; animation: twinkle 3s ease-in-out infinite; }
+  .stars.s2 { background-image: radial-gradient(1.2px 1.2px at 50px 60px, #fff, transparent), radial-gradient(2px 2px at 160px 20px, #ffd1f0, transparent), radial-gradient(1.4px 1.4px at 100px 140px, #fff, transparent);
+    background-size: 180px 170px; animation: twinkle 4.5s ease-in-out infinite reverse; }
+  .comet { width: 140px; height: 2px; top: 22%; left: -160px; background: linear-gradient(90deg, transparent, #fff); border-radius: 2px;
+    transform: rotate(18deg); animation: comet 7s linear infinite 1s; box-shadow: 0 0 10px #fff; }
+  @keyframes twinkle { 0%,100% { opacity: .5 } 50% { opacity: 1 } }
+  @keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+  @keyframes comet { 0% { left: -160px; top: 12% } 18%,100% { left: 120%; top: 38% } }
+  .hero-ship { width: 96px; height: 110px; filter: drop-shadow(0 0 16px rgba(120,220,255,.8)); animation: shipFloat 3s ease-in-out infinite; margin-bottom: 4px; }
+  .hero-ship .flame { animation: flame .12s ease-in-out infinite alternate; transform-origin: 0 14px; }
+  .hero-ship .blink { animation: twinkle .8s steps(2) infinite; }
+  @keyframes shipFloat { 0%,100% { transform: translateY(0) rotate(-2deg) } 50% { transform: translateY(-12px) rotate(2deg) } }
+  @keyframes flame { from { transform: scaleY(.8) } to { transform: scaleY(1.15) } }
+  .st-kicker { font-family: 'Black Han Sans', sans-serif; letter-spacing: 8px; font-size: 13px; color: #ffe58a; text-shadow: 0 0 10px rgba(255,200,80,.8); }
+  #startScreen h1 { font-size: 58px; margin-top: 2px; white-space: nowrap;
+    background: linear-gradient(180deg, #ffffff 0%, #fff2a8 40%, #ffb547 70%, #ff6fa8 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 0 rgba(80,20,140,.9)) drop-shadow(0 0 22px rgba(255,180,120,.7)); }
+  #startScreen .sub { color: #f2f0ff; text-shadow: 0 1px 6px rgba(20,0,60,.6); }
+  #startScreen #nameInput { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.6); }
+  #startScreen #nameInput::placeholder { color: rgba(255,255,255,.75); }
+  #startBtn { background: linear-gradient(180deg, #ffe58a, #ff9a5a 55%, #ff5fa2); color: #2a0a40; box-shadow: 0 0 28px rgba(255,150,120,.8), 0 6px 0 #a3306e; animation: pulse 1.8s ease-in-out infinite; }
+  #startBtn:active { box-shadow: 0 0 20px rgba(255,150,120,.8), 0 2px 0 #a3306e; transform: translateY(4px); }
+  @keyframes pulse { 0%,100% { filter: brightness(1) } 50% { filter: brightness(1.15) } }
+  #startScreen .help { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); color: #fff; backdrop-filter: blur(6px); }
+  #startScreen .help { word-break: keep-all; font-size: 13px; line-height: 1.8; padding: 12px 14px; }
+  #startScreen .help .items span { display: inline; }
+  #startScreen .help .items span b { white-space: nowrap; }
+  #startScreen .help .items .dot { display: inline-flex; vertical-align: -3px; margin-right: 4px; }
+  #startScreen #nameInput { width: 270px; font-size: 15px; }
+  #startScreen .unit-label { color: #fff; background: rgba(255,255,255,.14); padding: 6px 12px; border-radius: 999px; }
+  #startScreen .best { color: #ffe58a; }
   #muteBtn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 10px; padding: 6px 10px; font-size: 14px; cursor: pointer; z-index: 5; }
 </style>
 </head>
@@ -83,10 +133,30 @@
   <button id="muteBtn" title="소리 켜기/끄기">🔊</button>
 
   <div id="startScreen" class="overlay">
-    <h1>스타<br>디펜더</h1>
+    <div class="st-bg"><i class="planet"></i><i class="ring"></i><i class="moon"></i><i class="stars s1"></i><i class="stars s2"></i><i class="comet"></i></div>
+    <svg class="hero-ship" viewBox="-40 -40 80 92" aria-hidden="true">
+      <defs>
+        <linearGradient id="hb" x1="0" x2="1"><stop offset="0" stop-color="#7b86b5"/><stop offset=".45" stop-color="#ffffff"/><stop offset="1" stop-color="#6a74a3"/></linearGradient>
+        <linearGradient id="hw" x1="0" x2="1"><stop offset="0" stop-color="#1b2350"/><stop offset=".5" stop-color="#5c74c9"/><stop offset="1" stop-color="#1b2350"/></linearGradient>
+        <linearGradient id="hc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9fbff"/><stop offset=".5" stop-color="#2fb8ff"/><stop offset="1" stop-color="#0a1f6b"/></linearGradient>
+        <linearGradient id="hf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#78e6ff"/><stop offset="1" stop-color="#7a3cff" stop-opacity="0"/></linearGradient>
+      </defs>
+      <g class="flame"><path d="M-10 14 Q-6.5 46 -3 14Z" fill="url(#hf)"/><path d="M3 14 Q6.5 46 10 14Z" fill="url(#hf)"/></g>
+      <path d="M-5 -6 L-25 10 L-26 16 L-17 15 L-8 11 L8 11 L17 15 L26 16 L25 10 L5 -6Z" fill="url(#hw)"/>
+      <path d="M-5 -6 L-25 10 M5 -6 L25 10" stroke="#5ef0ff" stroke-width="1.4" fill="none"/>
+      <path d="M-19 9 L-23 12 L-23 14 L-19 12Z M19 9 L23 12 L23 14 L19 12Z" fill="#ff4f9a"/>
+      <path d="M-6 6 L-12 19 L-7 18Z M6 6 L12 19 L7 18Z" fill="#2b3a78"/>
+      <path d="M0 -28 C4 -20 7 -8 7.5 2 L9 14 L3 16 L0 13 L-3 16 L-9 14 L-7.5 2 C-7 -8 -4 -20 0 -28Z" fill="url(#hb)"/>
+      <path d="M0 -28 L1.6 -23 L-1.6 -23Z" fill="#ff4f9a"/>
+      <ellipse cx="0" cy="-8" rx="3.6" ry="9" fill="url(#hc)"/>
+      <ellipse cx="-1.2" cy="-11" rx="1" ry="3.2" fill="#fff" opacity=".85" transform="rotate(-11 -1.2 -11)"/>
+      <circle cx="-25.5" cy="15" r="1.6" fill="#ff3b5c" class="blink"/><circle cx="25.5" cy="15" r="1.6" fill="#3bff9c" class="blink"/>
+    </svg>
+    <div class="st-kicker">STAR DEFENDER</div>
+    <h1>스타 디펜더</h1>
     <div class="sub">은하를 지켜라! 몰려오는 외계 함대를 격파하세요</div>
     <input id="nameInput" maxlength="12" placeholder="이름 또는 학번 (예: 10215 홍길동)" autocomplete="off">
-    <button class="btn" id="startBtn">게임 시작</button>
+    <button class="btn" id="startBtn">🚀 게임 시작</button>
     <div class="help">
       <b>PC</b> · 방향키 / WASD 이동 · <b>스페이스</b> 발사 · <b>P</b> 일시정지<br>
       <b>모바일</b> · 화면을 끌어서 이동 (자동 발사)
@@ -100,7 +170,7 @@
         <span><i class="dot" style="background:#b88cff">B</i>폭탄</span>
       </div>
     </div>
-    <div class="unit-label">퀴즈 범위 · 통합사회2 Ⅲ. 시장경제와 지속가능발전</div>
+    <div class="unit-label">📚 퀴즈 범위 · 통합사회2 Ⅲ. 시장경제와 지속가능발전</div>
     <div class="sub best" id="bestStart"></div>
   </div>
 
